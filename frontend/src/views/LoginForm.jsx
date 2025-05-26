@@ -1,14 +1,12 @@
-// LoginForm.js
-
 import React, { useState } from "react";
 
-export default function LoginForm({ onLogin, error }) {
+export default function LoginForm({ onLogin, error, onClientClick }) {
     const [email, setEmail] = useState("");
     const [parola, setParola] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onLogin(email, parola); // apelez funcția din App.js
+        onLogin(email, parola);
     };
 
     return (
@@ -36,6 +34,11 @@ export default function LoginForm({ onLogin, error }) {
                 {error && <p style={{ color: "red" }}>{error}</p>}
                 <button type="submit">Login</button>
             </form>
+
+            {/* Buton simplu pentru Client */}
+            <button onClick={onClientClick} style={{ marginTop: "20px" }}>
+                Client
+            </button>
         </div>
     );
 }

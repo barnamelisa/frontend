@@ -1,16 +1,15 @@
-// App.js
-
 import React, { useState } from "react";
 import LoginForm from "./views/LoginForm";
 import AdminPage from "./views/AdminPage";
+import ClientPage from "./views/ClientPage"; // Componenta client
 
 export default function App() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const [view, setView] = useState("login"); // login, admin, client
 
     async function handleLogin(email, parola) {
         try {
-            // 1. Autentificare
             const res = await fetch("http://localhost:8085/user/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -21,7 +20,6 @@ export default function App() {
             const { token } = await res.json();
             localStorage.setItem("token", token);
 
-            // 2. Preluare profil user
             const profilRes = await fetch("http://localhost:8085/user/user/profil", {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -29,10 +27,10 @@ export default function App() {
 
             const userData = await profilRes.json();
 
-            // 3. Verificare rol și setare user
             if (userData.rol?.nume_rol === "ADMINISTRATOR") {
                 setUser(userData);
                 setError(null);
+                setView("admin");
             } else {
                 setError("Nu ai drepturi de administrator");
             }
@@ -44,15 +42,22 @@ export default function App() {
     function handleLogout() {
         localStorage.removeItem("token");
         setUser(null);
+        setView("login");
     }
 
-    if (!user) {
-        return <LoginForm onLogin={handleLogin} error={error} />;
+    if (view === "admin" && user) {
+        return <AdminPage user={user} onLogout={handleLogout} />;
+    }
+
+    if (view === "client") {
+        return <ClientPage onBack={() => setView("login")} />;
     }
 
     return (
-        <div>
-            <AdminPage user={user} onLogout={handleLogout} />
-        </div>
+        <LoginForm
+            onLogin={handleLogin}
+            error={error}
+            onClientClick={() => setView("client")}
+        />
     );
 }
