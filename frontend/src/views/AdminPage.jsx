@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAdminPageViewModel } from "../viewmodels/adminPageViewModel";
 
-export default function AdminPage() {
+export default function AdminPage({ user, onLogout }) {
     const {
         users,
         loading,
@@ -77,6 +77,10 @@ export default function AdminPage() {
 
     return (
         <div>
+            <button onClick={onLogout} style={{ marginBottom: "20px" }}>
+                Logout
+            </button>
+
             <h2>Administrare Utilizatori</h2>
 
             <div style={{ marginBottom: 12 }}>
@@ -297,8 +301,8 @@ export default function AdminPage() {
                                 setNewUser({ ...newUser, rol: { id_rol: rolId, nume_rol: rolName } });
                             }}
                         >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
+                            <option value="USER">User</option>
+                            <option value="ADMINISTRATOR">Admin</option>
                         </select>
                     </td>
                     <td>

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import LoginForm from "./views/LoginForm";
+import AdminPage from "./views/AdminPage";
 
 export default function App() {
     const [user, setUser] = useState(null);
@@ -40,14 +41,18 @@ export default function App() {
         }
     }
 
+    function handleLogout() {
+        localStorage.removeItem("token");
+        setUser(null);
+    }
+
     if (!user) {
         return <LoginForm onLogin={handleLogin} error={error} />;
     }
 
     return (
         <div>
-            <h1>Bine ai venit, {user.nume_user}!</h1>
-            {/* restul aplicației pentru useri autentificați */}
+            <AdminPage user={user} onLogout={handleLogout} />
         </div>
     );
 }
