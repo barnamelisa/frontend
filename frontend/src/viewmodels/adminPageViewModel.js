@@ -6,9 +6,17 @@ export function useAdminPageViewModel() {
     const [error, setError] = useState(null);
     const [filterRol, setFilterRol] = useState("ALL");
 
+    const BASE_URL = "http://localhost:8085/user/user";
+
     const fetchUsers = () => {
         setLoading(true);
-        fetch("http://localhost:8085/users", { credentials: "include" })
+        const token = localStorage.getItem("token");
+
+        fetch("http://localhost:8085/user/user", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
             .then((res) => {
                 if (!res.ok) throw new Error("Eroare la preluarea utilizatorilor");
                 return res.json();
@@ -21,42 +29,56 @@ export function useAdminPageViewModel() {
             .finally(() => setLoading(false));
     };
 
+
     useEffect(() => {
         fetchUsers();
     }, []);
 
     const addUser = async (user) => {
-        const res = await fetch("http://localhost:8085/users", {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8085/user/user", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(user),
         });
         if (!res.ok) throw new Error("Eroare la adăugare user");
         fetchUsers();
     };
 
+
     const updateUser = async (user) => {
-        const res = await fetch(`http://localhost:8085/users/${user.id_user}`, {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:8085/user/user/${user.id_user}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(user),
         });
         if (!res.ok) throw new Error("Eroare la actualizare user");
-        // Simulează notificare
         alert(`Utilizatorul ${user.email} a fost notificat (simulare)!`);
         fetchUsers();
     };
 
+
+
     const deleteUser = async (id) => {
-        const res = await fetch(`http://localhost:8085/users/${id}`, {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:8085/user/user/${id}`, {
             method: "DELETE",
-            credentials: "include",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
         if (!res.ok) throw new Error("Eroare la ștergere user");
         fetchUsers();
     };
+
+
 
     const exportToCSV = () => {
         const header = "ID,Nume,Prenume,Email,Telefon,Rol\n";
