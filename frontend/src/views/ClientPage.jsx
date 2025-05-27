@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { usePrajituraViewModel } from "../viewmodels/usePrajituraViewModel";
+import { useTranslation } from "react-i18next";
 
 export default function ClientPage({ onBack }) {
     const { prajituri, loading, error } = usePrajituraViewModel();
@@ -7,6 +8,7 @@ export default function ClientPage({ onBack }) {
     const [filteredPrajituri, setFilteredPrajituri] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [showNeexpirate, setShowNeexpirate] = useState(false);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         let list = prajituri;
@@ -36,6 +38,11 @@ export default function ClientPage({ onBack }) {
         <div>
             <h2>Prăjituri</h2>
 
+            <div style={{ marginBottom: "10px" }}>
+                <button onClick={() => i18n.changeLanguage("ro")}>Română</button>
+                <button onClick={() => i18n.changeLanguage("en")}>English</button>
+                <button onClick={() => i18n.changeLanguage("fr")}>Français</button>
+            </div>
             <input
                 type="text"
                 placeholder="Caută prăjitură după nume"

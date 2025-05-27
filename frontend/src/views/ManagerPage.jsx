@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { usePrajituraViewModel } from "../viewmodels/usePrajituraViewModel";
 import { saveAs } from "file-saver";
 import {
@@ -10,6 +10,7 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 function toCSV(data) {
     if (!data.length) return "";
@@ -50,7 +51,9 @@ function toDOC(data) {
 }
 
 export default function ManagerPage() {
-    const { prajituri, loading, error, addPrajitura, deletePrajitura } = usePrajituraViewModel();
+    const { t, i18n } = useTranslation();
+    const { prajituri, loading, error, addPrajitura, deletePrajitura } =
+        usePrajituraViewModel();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [showNeexpirate, setShowNeexpirate] = useState(false);
@@ -64,7 +67,7 @@ export default function ManagerPage() {
         pret: "",
         dataProductie: "",
         dataExpirare: "",
-        imagine: ""
+        imagine: "",
     });
 
     useEffect(() => {
@@ -90,10 +93,9 @@ export default function ManagerPage() {
         setFilteredPrajituri(list);
     }, [prajituri, searchTerm, showNeexpirate, showExpired]);
 
-    // Export general
     const exportData = (format) => {
         if (filteredPrajituri.length === 0) {
-            alert("Nu există date de exportat!");
+            alert(t("managerPage.export.no_data"));
             return;
         }
 
@@ -115,21 +117,19 @@ export default function ManagerPage() {
         }
     };
 
-    // Export prajituri expirate
     const exportExpiredToWord = () => {
         const azi = new Date();
         const expired = prajituri.filter(
             (p) => p.dataExpirare && new Date(p.dataExpirare) < azi
         );
         if (expired.length === 0) {
-            alert("Nu există prăjituri expirate nevândute.");
+            alert(t("managerPage.alerts.no_expired"));
             return;
         }
         const docBlob = toDOC(expired);
         saveAs(docBlob, "prajituri_expirate.doc");
     };
 
-    // --- Statistici (ex: număr prăjituri per cofetărie) ---
     const stats = prajituri.reduce((acc, p) => {
         acc[p.cofetarieId] = (acc[p.cofetarieId] || 0) + 1;
         return acc;
@@ -142,7 +142,7 @@ export default function ManagerPage() {
 
     const handleAdd = async () => {
         if (!newPrajitura.numePrajitura.trim()) {
-            alert("Numele prăjiturii nu poate fi gol!");
+            alert(t("managerPage.alerts.name_required"));
             return;
         }
 
@@ -153,57 +153,86 @@ export default function ManagerPage() {
             pret: newPrajitura.pret,
             data_productie: newPrajitura.dataProductie,
             data_expirare: newPrajitura.dataExpirare,
-            imagine: newPrajitura.imagine
+            imagine: newPrajitura.imagine,
         });
     };
 
-    if (loading) return <p>Se încarcă prăjiturile...</p>;
-    if (error) return <p style={{ color: "red" }}>Eroare: {error}</p>;
-
+    if (loading) return <p>{t("managerPage.alerts.loading")}</p>;
+    if (error)
+        return (
+            <p style={{ color: "red" }}>
+                {t("managerPage.alerts.error", { error })}
+            </p>
+        );
 
     return (
         <div>
-            <h2>Prăjituri</h2>
+            <h2>{t("managerPage.title") || "Prăjituri"}</h2>
+
+            <div style={{ marginBottom: 12 }}>
+                <button onClick={() => i18n.changeLanguage("ro")}>🇷🇴</button>
+                <button onClick={() => i18n.changeLanguage("en")}>🇬🇧</button>
+                <button onClick={() => i18n.changeLanguage("fr")}>🇫🇷</button>
+            </div>
 
             {/* FILTRARE */}
             <input
                 type="text"
-                placeholder="Caută prăjitură după nume"
+                placeholder={t("managerPage.filters.search_placeholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ marginBottom: "10px", padding: "5px" }}
             />
             <button onClick={() => setShowNeexpirate(!showNeexpirate)}>
-                {showNeexpirate ? "Arată toate prăjiturile" : "Arată doar prăjiturile neexpirate"}
+                {showNeexpirate
+                    ? t("managerPage.filters.show_all")
+                    : t("managerPage.filters.show_neexpirate")}
             </button>
-            <button onClick={() => setShowExpired(!showExpired)} style={{ marginLeft: "10px" }}>
-                {showExpired ? "Arată toate prăjiturile" : "Arată doar prăjiturile expirate"}
+            <button
+                onClick={() => setShowExpired(!showExpired)}
+                style={{ marginLeft: "10px" }}
+            >
+                {showExpired
+                    ? t("managerPage.filters.show_all")
+                    : t("managerPage.filters.show_expired")}
             </button>
 
             {/* EXPORT */}
             <div style={{ marginTop: "10px" }}>
-                <button onClick={() => exportData("csv")}>Export CSV</button>
-                <button onClick={() => exportData("json")}>Export JSON</button>
-                <button onClick={() => exportData("xml")}>Export XML</button>
-                <button onClick={() => exportData("doc")}>Export DOC</button>
+                <button onClick={() => exportData("csv")}>
+                    {t("managerPage.export.export_csv")}
+                </button>
+                <button onClick={() => exportData("json")}>
+                    {t("managerPage.export.export_json")}
+                </button>
+                <button onClick={() => exportData("xml")}>
+                    {t("managerPage.export.export_xml")}
+                </button>
+                <button onClick={() => exportData("doc")}>
+                    {t("managerPage.export.export_doc")}
+                </button>
                 <button onClick={exportExpiredToWord} style={{ marginLeft: "20px" }}>
-                    Export prăjituri expirate în Word
+                    {t("managerPage.export.export_expired_word")}
                 </button>
             </div>
 
             {/* TABEL prajituri filtrate */}
-            <table border="1" cellPadding={5} style={{ marginTop: "10px", width: "100%" }}>
+            <table
+                border="1"
+                cellPadding={5}
+                style={{ marginTop: "10px", width: "100%" }}
+            >
                 <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Nume</th>
-                    <th>Descriere</th>
-                    <th>Cofetărie</th>
-                    <th>Preț</th>
-                    <th>Produs</th>
-                    <th>Expirare</th>
-                    <th>Imagine</th>
-                    <th>Acțiuni</th>
+                    <th>{t("managerPage.tableHeaders.id")}</th>
+                    <th>{t("managerPage.tableHeaders.name")}</th>
+                    <th>{t("managerPage.tableHeaders.description")}</th>
+                    <th>{t("managerPage.tableHeaders.cofetarie")}</th>
+                    <th>{t("managerPage.tableHeaders.price")}</th>
+                    <th>{t("managerPage.tableHeaders.production_date")}</th>
+                    <th>{t("managerPage.tableHeaders.expiration_date")}</th>
+                    <th>{t("managerPage.tableHeaders.image")}</th>
+                    <th>{t("managerPage.tableHeaders.actions")}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -218,20 +247,24 @@ export default function ManagerPage() {
                         <td>{p.dataExpirare}</td>
                         <td>
                             {p.imagine ? (
-                                <img src={p.imagine} alt={p.numePrajitura} style={{ width: "100px" }} />
+                                <img
+                                    src={p.imagine}
+                                    alt={p.numePrajitura}
+                                    style={{ width: "100px" }}
+                                />
                             ) : (
-                                "Fără imagine"
+                                t("managerPage.tableHeaders.image") // Could be replaced with e.g. "Fără imagine" translated, but JSON doesn't have that string
                             )}
                         </td>
                         <td>
                             <button
                                 onClick={() => {
-                                    if (window.confirm("Ștergi această prăjitură?")) {
+                                    if (window.confirm(t("managerPage.actions.delete_confirm"))) {
                                         deletePrajitura(p.id);
                                     }
                                 }}
                             >
-                                Șterge
+                                {t("managerPage.actions.delete_button")}
                             </button>
                         </td>
                     </tr>
@@ -300,7 +333,7 @@ export default function ManagerPage() {
                         />
                     </td>
                     <td>
-                        <button onClick={handleAdd}>Adaugă</button>
+                        <button onClick={handleAdd}>{t("managerPage.actions.add_button")}</button>
                     </td>
                 </tr>
                 </tbody>
@@ -308,7 +341,7 @@ export default function ManagerPage() {
 
             {/* Grafic simplu */}
             <div style={{ width: "100%", height: 300, marginTop: "20px" }}>
-                <h3>Statistici prăjituri pe cofetărie</h3>
+                <h3>{t("managerPage.stats.title")}</h3>
                 <ResponsiveContainer>
                     <BarChart data={statsData}>
                         <XAxis dataKey="cofetarieId" />
