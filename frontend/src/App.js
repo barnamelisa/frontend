@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import LoginForm from "./views/LoginForm";
 import AdminPage from "./views/AdminPage";
 import ClientPage from "./views/ClientPage"; // Componenta client
+import ManagerPage from "./views/ManagerPage";
 
 export default function App() {
     const [user, setUser] = useState(null);
@@ -27,12 +28,17 @@ export default function App() {
 
             const userData = await profilRes.json();
 
+            // Permitem acces pentru ADMINISTRATOR și MANAGER
             if (userData.rol?.nume_rol === "ADMINISTRATOR") {
                 setUser(userData);
                 setError(null);
                 setView("admin");
+            } else if (userData.rol?.nume_rol === "MANAGER") {
+                setUser(userData);
+                setError(null);
+                setView("manager");  // Trebuie să adaugi și componenta ManagerPage în App pentru acest view
             } else {
-                setError("Nu ai drepturi de administrator");
+                setError("Nu ai drepturi de administrator sau manager");
             }
         } catch (err) {
             setError(err.message);
@@ -52,6 +58,11 @@ export default function App() {
     if (view === "client") {
         return <ClientPage onBack={() => setView("login")} />;
     }
+
+    if (view === "manager" && user) {
+        return <ManagerPage user={user} onLogout={handleLogout} />;
+    }
+
 
     return (
         <LoginForm
