@@ -3,6 +3,7 @@ import LoginForm from "./views/LoginForm";
 import AdminPage from "./views/AdminPage";
 import ClientPage from "./views/ClientPage"; // Componenta client
 import ManagerPage from "./views/ManagerPage";
+import AngajatPage from "./views/AngajatPage";
 
 export default function App() {
     const [user, setUser] = useState(null);
@@ -37,6 +38,10 @@ export default function App() {
                 setUser(userData);
                 setError(null);
                 setView("manager");  // Trebuie să adaugi și componenta ManagerPage în App pentru acest view
+            } else if (userData.rol?.nume_rol === "ANGAJAT") {
+                setUser(userData);
+                setError(null);
+                setView("angajat");  // Nou view pentru angajat
             } else {
                 setError("Nu ai drepturi de administrator sau manager");
             }
@@ -61,6 +66,10 @@ export default function App() {
 
     if (view === "manager" && user) {
         return <ManagerPage user={user} onLogout={handleLogout} />;
+    }
+
+    if (view === "angajat" && user) {
+        return <AngajatPage user={user} onLogout={handleLogout} />;
     }
 
 

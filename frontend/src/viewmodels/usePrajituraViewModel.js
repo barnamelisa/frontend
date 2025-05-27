@@ -70,5 +70,15 @@ export function usePrajituraViewModel() {
         }
     }
 
+    function addStocLocal(id) {
+        setPrajituri(prev =>
+            prev.map(p =>
+                p.id === id
+                    ? new Prajitura({ ...p, stoc: (p.stoc || 0) + 10 }) // adaugă 10 stoc
+                    : p
+            )
+        );
+    }
+
     return { prajituri, loading, error, addPrajitura, deletePrajitura };
 }

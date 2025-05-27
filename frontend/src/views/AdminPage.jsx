@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAdminPageViewModel } from "../viewmodels/adminPageViewModel";
 
 export default function AdminPage({ user, onLogout }) {
+    const { t, i18n } = useTranslation();
+
     const {
         users,
         loading,
@@ -14,20 +17,17 @@ export default function AdminPage({ user, onLogout }) {
         setFilterRol,
     } = useAdminPageViewModel();
 
-    // stare pentru user nou
     const [newUser, setNewUser] = useState({
         nume_user: "",
         prenume_user: "",
         email: "",
         parola: "",
         nr_telefon: "",
-        rol: { id_rol: 2, nume_rol: "user" }, // default rol user, poți ajusta
+        rol: { id_rol: 2, nume_rol: "user" },
     });
 
-    // state pentru editare inline: obiect cu id_user ca și cheie
     const [editStates, setEditStates] = useState({});
 
-    // update local edit state când user editează
     const handleEditChange = (id, field, value) => {
         setEditStates((prev) => ({
             ...prev,
@@ -35,7 +35,6 @@ export default function AdminPage({ user, onLogout }) {
         }));
     };
 
-    // salvează modificări editate
     const handleSave = (id) => {
         const userToUpdate = editStates[id];
         if (!userToUpdate) return;
@@ -47,7 +46,6 @@ export default function AdminPage({ user, onLogout }) {
         });
     };
 
-    // setează edit state când se apasă edit
     const handleEditClick = (user) => {
         setEditStates((prev) => ({
             ...prev,
@@ -55,10 +53,9 @@ export default function AdminPage({ user, onLogout }) {
         }));
     };
 
-    // formular adăugare user simplificat
     const handleAddUser = async () => {
         if (!newUser.email || !newUser.parola) {
-            alert("Email și parola sunt obligatorii");
+            alert(t("admin.required_fields"));
             return;
         }
         await addUser(newUser);
@@ -72,31 +69,34 @@ export default function AdminPage({ user, onLogout }) {
         });
     };
 
-    if (loading) return <p>Se încarcă utilizatorii...</p>;
-    if (error) return <p style={{ color: "red" }}>Eroare: {error}</p>;
+    if (loading) return <p>{t("admin.loading")}</p>;
+    if (error) return <p style={{ color: "red" }}>{t("admin.error", { error })}</p>;
 
     return (
         <div>
+            <div style={{ marginBottom: 12 }}>
+                <button onClick={() => i18n.changeLanguage("ro")}>🇷🇴</button>
+                <button onClick={() => i18n.changeLanguage("en")}>🇬🇧</button>
+                <button onClick={() => i18n.changeLanguage("fr")}>🇫🇷</button>
+            </div>
+
             <button onClick={onLogout} style={{ marginBottom: "20px" }}>
-                Logout
+                {t("logout")}
             </button>
 
-            <h2>Administrare Utilizatori</h2>
+            <h2>{t("admin.title")}</h2>
 
             <div style={{ marginBottom: 12 }}>
                 <label>
-                    Filtrează după rol:{" "}
-                    <select
-                        value={filterRol}
-                        onChange={(e) => setFilterRol(e.target.value)}
-                    >
-                        <option value="ALL">Toți</option>
-                        <option value="admin">Admin</option>
-                        <option value="user">User</option>
+                    {t("admin.filter_role")}
+                    <select value={filterRol} onChange={(e) => setFilterRol(e.target.value)}>
+                        <option value="ALL">{t("admin.all")}</option>
+                        <option value="admin">{t("admin.admin")}</option>
+                        <option value="user">{t("admin.user")}</option>
                     </select>
                 </label>
                 <button onClick={exportToCSV} style={{ marginLeft: 12 }}>
-                    Export CSV
+                    {t("admin.export")}
                 </button>
             </div>
 
@@ -104,13 +104,13 @@ export default function AdminPage({ user, onLogout }) {
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Nume</th>
-                    <th>Prenume</th>
-                    <th>Email</th>
-                    <th>Parola</th>
-                    <th>Telefon</th>
-                    <th>Rol</th>
-                    <th>Acțiuni</th>
+                    <th>{t("admin.form.name")}</th>
+                    <th>{t("admin.form.surname")}</th>
+                    <th>{t("admin.form.email")}</th>
+                    <th>{t("admin.form.password")}</th>
+                    <th>{t("admin.form.phone")}</th>
+                    <th>{t("admin.form.role")}</th>
+                    <th>{t("admin.actions")}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -188,7 +188,6 @@ export default function AdminPage({ user, onLogout }) {
                                         value={userData.rol?.nume_rol || "user"}
                                         onChange={(e) => {
                                             const rolName = e.target.value;
-                                            // Setăm id_rol în funcție de rol (hardcoded)
                                             const rolId = rolName === "admin" ? 1 : 2;
                                             handleEditChange(u.id_user, "rol", {
                                                 id_rol: rolId,
@@ -196,8 +195,8 @@ export default function AdminPage({ user, onLogout }) {
                                             });
                                         }}
                                     >
-                                        <option value="admin">Admin</option>
-                                        <option value="user">User</option>
+                                        <option value="admin">{t("admin.admin")}</option>
+                                        <option value="user">{t("admin.user")}</option>
                                     </select>
                                 ) : (
                                     u.rol?.nume_rol
@@ -206,7 +205,7 @@ export default function AdminPage({ user, onLogout }) {
                             <td>
                                 {isEditing ? (
                                     <>
-                                        <button onClick={() => handleSave(u.id_user)}>Salvează</button>
+                                        <button onClick={() => handleSave(u.id_user)}>{t("admin.save")}</button>
                                         <button
                                             onClick={() =>
                                                 setEditStates((prev) => {
@@ -216,24 +215,27 @@ export default function AdminPage({ user, onLogout }) {
                                                 })
                                             }
                                         >
-                                            Anulează
+                                            {t("admin.cancel")}
                                         </button>
                                     </>
                                 ) : (
                                     <>
-                                        <button onClick={() => handleEditClick(u)}>Editează</button>
+                                        <button onClick={() => handleEditClick(u)}>{t("admin.edit")}</button>
                                         <button
                                             onClick={() => {
                                                 if (
                                                     window.confirm(
-                                                        `Ștergi utilizatorul ${u.nume_user} ${u.prenume_user}?`
+                                                        t("admin.confirm_delete", {
+                                                            name: u.nume_user,
+                                                            surname: u.prenume_user,
+                                                        })
                                                     )
                                                 ) {
                                                     deleteUser(u.id_user);
                                                 }
                                             }}
                                         >
-                                            Șterge
+                                            {t("admin.delete")}
                                         </button>
                                     </>
                                 )}
@@ -242,7 +244,6 @@ export default function AdminPage({ user, onLogout }) {
                     );
                 })}
 
-                {/* Form adăugare user nou */}
                 <tr>
                     <td>+</td>
                     <td>
@@ -251,7 +252,7 @@ export default function AdminPage({ user, onLogout }) {
                             onChange={(e) =>
                                 setNewUser({ ...newUser, nume_user: e.target.value })
                             }
-                            placeholder="Nume"
+                            placeholder={t("admin.form.name")}
                         />
                     </td>
                     <td>
@@ -260,27 +261,27 @@ export default function AdminPage({ user, onLogout }) {
                             onChange={(e) =>
                                 setNewUser({ ...newUser, prenume_user: e.target.value })
                             }
-                            placeholder="Prenume"
+                            placeholder={t("admin.form.surname")}
                         />
                     </td>
                     <td>
                         <input
+                            type="email"
                             value={newUser.email}
                             onChange={(e) =>
                                 setNewUser({ ...newUser, email: e.target.value })
                             }
-                            placeholder="Email"
-                            type="email"
+                            placeholder={t("admin.form.email")}
                         />
                     </td>
                     <td>
                         <input
+                            type="password"
                             value={newUser.parola}
                             onChange={(e) =>
                                 setNewUser({ ...newUser, parola: e.target.value })
                             }
-                            placeholder="Parolă"
-                            type="password"
+                            placeholder={t("admin.form.password")}
                         />
                     </td>
                     <td>
@@ -289,24 +290,27 @@ export default function AdminPage({ user, onLogout }) {
                             onChange={(e) =>
                                 setNewUser({ ...newUser, nr_telefon: e.target.value })
                             }
-                            placeholder="Telefon"
+                            placeholder={t("admin.form.phone")}
                         />
                     </td>
                     <td>
                         <select
-                            value={newUser.rol?.nume_rol}
+                            value={newUser.rol.nume_rol}
                             onChange={(e) => {
                                 const rolName = e.target.value;
                                 const rolId = rolName === "admin" ? 1 : 2;
-                                setNewUser({ ...newUser, rol: { id_rol: rolId, nume_rol: rolName } });
+                                setNewUser({
+                                    ...newUser,
+                                    rol: { id_rol: rolId, nume_rol: rolName },
+                                });
                             }}
                         >
-                            <option value="USER">User</option>
-                            <option value="ADMINISTRATOR">Admin</option>
+                            <option value="user">{t("admin.user")}</option>
+                            <option value="admin">{t("admin.admin")}</option>
                         </select>
                     </td>
                     <td>
-                        <button onClick={handleAddUser}>Adaugă</button>
+                        <button onClick={handleAddUser}>{t("admin.add_user")}</button>
                     </td>
                 </tr>
                 </tbody>
